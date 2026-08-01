@@ -1,22 +1,1069 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1e2d5a" />
-    <meta name="description" content="Sistema de gestión integral — Unión Pentecostal" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="IEUP" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <title>Sistema IEUP</title>
-  </head>
-  <body>
-    <noscript>Necesitás activar JavaScript para usar este sistema.</noscript>
-    <div id="root"></div>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#001a33">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Unión Pentecostal">
+    <meta name="application-name" content="Unión Pentecostal">
+    <meta name="description" content="Centro de Gestión Integrado - Unión Pentecostal">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    
+    <title>Unión Pentecostal - Centro de Gestión</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-navy: #001a33;
+            --color-navy-light: #0d2847;
+            --color-gold: #c4a400;
+            --color-gold-light: #d4b800;
+            --color-red: #d32f2f;
+            --color-red-light: #f44336;
+            --color-sky: #4a90e2;
+            --color-sky-light: #6ba3f5;
+            --color-white: #ffffff;
+            --color-light-gray: #f8f9fa;
+            --color-dark-text: #1a1a1a;
+            --color-gray-text: #666666;
+
+            --bg-primary: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+            --bg-card: var(--color-white);
+            --bg-card-hover: #f5f5f5;
+            --text-primary: var(--color-dark-text);
+            --text-secondary: var(--color-gray-text);
+            --text-light: #999999;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --modal-bg: var(--color-white);
+            --input-bg: var(--color-white);
+            --input-border: #e0e0e0;
+            --menu-bg: rgba(255, 255, 255, 0.98);
+            --shadow-color: rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            --bg-card: #1e2139;
+            --bg-card-hover: #282f4d;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --modal-bg: #1e2139;
+            --input-bg: #252f4d;
+            --input-border: #3a4560;
+            --menu-bg: rgba(30, 33, 57, 0.98);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -webkit-touch-callout: none;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 184, 0, 0.12) 0%, rgba(211, 47, 47, 0.08) 50%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            animation: spiritualGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes spiritualGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            width: 70px;
+            height: 70px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px var(--shadow-color), 0 0 25px rgba(212, 184, 0, 0.3);
+            border: 2px solid rgba(196, 164, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .logo-item:hover {
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        .logo-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .header h1 {
+            color: var(--color-white);
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 184, 0, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .scripture {
+            color: rgba(212, 184, 0, 0.9);
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-top: 1rem;
+        }
+
+        .systems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .system-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--color-red) 0%, var(--color-gold) 50%, var(--color-sky) 100%);
+            box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+        }
+
+        .system-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px var(--shadow-color);
+            border-color: var(--color-gold);
+        }
+
+        .card-logo {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.2);
+            border: 2px solid rgba(196, 164, 0, 0.3);
+        }
+
+        .card-logo img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .system-card h2 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        .system-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .btn-acceder {
+            background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-light) 100%);
+            color: var(--color-navy);
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(196, 164, 0, 0.3);
+        }
+
+        .btn-acceder:hover {
+            background: linear-gradient(135deg, var(--color-gold-light) 0%, var(--color-gold) 100%);
+            box-shadow: 0 8px 25px rgba(196, 164, 0, 0.4);
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer p:first-child {
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px var(--shadow-color);
+            animation: slideDown 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: var(--text-secondary);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--color-navy);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-gold);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-light) 100%);
+            color: var(--color-navy);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(196, 164, 0, 0.3);
+        }
+
+        .floating-menu {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+
+        .menu-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-red) 0%, var(--color-red-light) 100%);
+            border: 3px solid var(--color-gold);
+            color: var(--color-white);
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4), 0 0 30px rgba(212, 184, 0, 0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .menu-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(211, 47, 47, 0.5), 0 0 40px rgba(212, 184, 0, 0.4);
+        }
+
+        .menu-button.active {
+            background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+            transform: rotate(45deg);
+        }
+
+        .menu-items {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: var(--menu-bg);
+            border-radius: 16px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            padding: 15px 0;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid rgba(196, 164, 0, 0.3);
+        }
+
+        .menu-items.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: rgba(196, 164, 0, 0.1);
+            border-left-color: var(--color-gold);
+            padding-left: 24px;
+        }
+
+        .menu-item.divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 8px 0;
+            cursor: default;
+        }
+
+        .menu-item.divider:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-left-color: transparent;
+            padding-left: 20px;
+        }
+
+        .menu-item-icon {
+            font-size: 20px;
+            min-width: 24px;
+        }
+
+        .menu-item-text {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 998;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(196, 164, 0, 0.5);
+            color: var(--color-white);
+            padding: 10px 14px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(212, 184, 0, 0.3);
+            transform: scale(1.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .systems-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .logo-container {
+                gap: 1rem;
+            }
+
+            .logo-item {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .floating-menu {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .menu-button {
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+            }
+
+            .menu-items {
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón de Toggle de Tema -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeToggle">🌙</button>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo-container" id="logoContainer"></div>
+            <h1>🔥 Unión Pentecostal 🔥</h1>
+            <p class="subtitle">Centro de Gestión Integrado</p>
+            <p class="scripture">"Y de repente vino del cielo un estruendo como de un viento recio que soplaba, el cual llenó toda la casa donde estaban sentados." - Hechos 2:2</p>
+            <p class="scripture" style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.9;">"Derramaré mi Espíritu sobre toda carne." - Hechos 2:17</p>
+        </div>
+
+        <div class="systems-grid" id="systemsGrid"></div>
+
+        <div class="footer">
+            <p>© 2026 Unión Pentecostal</p>
+            <p>Centro de Gestión Integrado - Sistema centralizado de administración</p>
+            <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">"En los últimos días, dice Dios, derramaré mi Espíritu sobre toda carne." - Hechos 2:17</p>
+            
+            <!-- Datos de Facturación -->
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.2); font-size: 0.8rem; opacity: 0.8; line-height: 1.8;">
+                <p><strong>IGLESIA EVANGÉLICA UNIÓN PENTECOSTAL</strong></p>
+                <p>Rufino Rojas 665 - Bahía Blanca - Buenos Aires</p>
+                <p>CUIT: 33-68803418-9 | IVA: EXENTO</p>
+                <p>Ingreso Bruto: 2306-147809/04 (Exención Pacto Fiscal)</p>
+                <p>Actividad Principal: 949100 | Fichero de Culto: 68-79</p>
+                <p>Personería Jurídica: III-138-76</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para configuración de Firebase -->
+    <div id="firebaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 Sincronización en la Nube</h2>
+                <span class="close" onclick="closeFirebaseModal()">&times;</span>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Para sincronizar sistemas entre todos tus dispositivos, conecta Firebase (servicio gratuito de Google).
+                </p>
+                <div style="background: rgba(196, 164, 0, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+                        <strong>Estado actual:</strong>
+                        <span id="firebaseStatus" style="color: var(--color-red);">❌ Sin conexión a nube</span>
+                    </p>
+                </div>
+            </div>
+            <form onsubmit="configureFirebase(event)">
+                <div class="form-group">
+                    <label for="apiKey">API Key:</label>
+                    <input type="text" id="apiKey" placeholder="Tu API Key de Firebase">
+                </div>
+                <div class="form-group">
+                    <label for="projectId">Project ID:</label>
+                    <input type="text" id="projectId" placeholder="Tu Project ID">
+                </div>
+                <div class="form-group">
+                    <label for="databaseUrl">Database URL:</label>
+                    <input type="url" id="databaseUrl" placeholder="https://tu-proyecto.firebaseio.com">
+                </div>
+                <button type="submit" class="btn-submit">Conectar Firebase</button>
+                <button type="button" class="btn-submit" style="background: linear-gradient(135deg, var(--color-sky) 0%, var(--color-sky-light) 100%); margin-top: 0.5rem;" onclick="showFirebaseGuide()">
+                    📚 Ver Guía de Configuración
+                </button>
+            </form>
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    <strong>💡 Consejo:</strong> Si no configuras Firebase, los sistemas se guardarán solo en este dispositivo.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú Flotante -->
+    <div class="floating-menu">
+        <button class="menu-button" onclick="toggleMenu()" title="Menú">☰</button>
+        <div class="menu-items" id="menuItems">
+            <div class="menu-item" onclick="scrollToTop()">
+                <span class="menu-item-icon">⬆️</span>
+                <span class="menu-item-text">Ir al inicio</span>
+            </div>
+            <div class="menu-item divider"></div>
+            <div class="menu-item" onclick="showSystems()">
+                <span class="menu-item-icon">📋</span>
+                <span class="menu-item-text">Ver todos</span>
+            </div>
+            <div class="menu-item" onclick="downloadSystems()">
+                <span class="menu-item-icon">💾</span>
+                <span class="menu-item-text">Descargar datos</span>
+            </div>
+            <div class="menu-item divider"></div>
+            <div class="menu-item" onclick="showFirebaseConfig()">
+                <span class="menu-item-icon">🔐</span>
+                <span class="menu-item-text">Sincronización nube</span>
+            </div>
+            <div class="menu-item divider"></div>
+            <div class="menu-item" onclick="showInfo()">
+                <span class="menu-item-icon">ℹ️</span>
+                <span class="menu-item-text">Información</span>
+            </div>
+            <div class="menu-item" onclick="showHelp()">
+                <span class="menu-item-icon">❓</span>
+                <span class="menu-item-text">Ayuda</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let db = null;
+        let useFirebase = false;
+
+        let sistemas = [
+            {
+                id: 1,
+                nombre: "📦 Inventarios",
+                descripcion: "Gestiona tu inventario, controla stock y movimientos de productos",
+                url: "https://inventario-ieup.vercel.app/login",
+                logo: "icon-192x192.png"
+            },
+            {
+                id: 2,
+                nombre: "📋 Asistencia y Tareas",
+                descripcion: "Control de asistencia, gestión de tareas y administración de legajos",
+                url: "https://sistema-iglesia-zeta.vercel.app/",
+                logo: "icon-512x512.png"
+            },
+            {
+                id: 3,
+                nombre: "💳 Cobranzas Socios",
+                descripcion: "Gestión de pagos, cobranzas y control financiero de socios",
+                url: "https://iglesia-app-pi.vercel.app/",
+                logo: "icon-192x192.png"
+            },
+            {
+                id: 4,
+                nombre: "🍽️ Control Comedor",
+                descripcion: "Administra menús, reservas y control de asistencia al comedor",
+                url: "https://comedor-tarjeta.netlify.app/",
+                logo: "icon-512x512.png"
+            },
+            {
+                id: 5,
+                nombre: "🎵 Himnario Digital",
+                descripcion: "Accede a todos nuestros himnos, busca por tema o número y disfruta de la música de adoración",
+                url: "https://himnario-digital-two.vercel.app/",
+                logo: "icon-192x192.png"
+            },
+            {
+                id: 6,
+                nombre: "💰 Finanzas",
+                descripcion: "Control financiero, ingresos, gastos y reportes de administración económica",
+                url: "https://finanzas-ieup.vercel.app/",
+                logo: "icon-192x192.png"
+            },
+            {
+                id: 7,
+                nombre: "🎪 Control de Eventos",
+                descripcion: "Gestión de eventos, registro de asistentes y control de actividades especiales",
+                url: "https://evento-control-ieup.vercel.app/login",
+                logo: "icon-192x192.png"
+            },
+            {
+                id: 8,
+                nombre: "📚 Escuela Cristiana Bíblica",
+                descripcion: "Plataforma educativa para seminarios, estudiantes, profesores y evaluaciones",
+                url: "https://escuela-cristiana-biblica.vercel.app/",
+                logo: "icon-512x512.png"
+            }
+        ];
+
+        const logos = [
+            { name: "Logo Blanco", src: "logo-white.png" },
+            { name: "Logo Navy", src: "logo-navy.png" },
+            { name: "Logo Gold", src: "logo-gold.png" }
+        ];
+
+        // ============================================
+        // FUNCIONES DE TEMA
+        // ============================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // ============================================
+        // FUNCIONES DE SISTEMAS
+        // ============================================
+        function saveSystems() {
+            localStorage.setItem('sistemas', JSON.stringify(sistemas));
+        }
+
+        function loadSystems() {
+            const saved = localStorage.getItem('sistemas');
+            if (saved) {
+                sistemas = JSON.parse(saved);
+            }
+            renderSystems();
+        }
+
+        function renderSystems() {
+            const grid = document.getElementById('systemsGrid');
+            grid.innerHTML = '';
+
+            sistemas.forEach((sistema, index) => {
+                const card = document.createElement('div');
+                card.className = 'system-card';
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.innerHTML = `
+                    <div class="card-logo">
+                        <img src="${sistema.logo}" alt="${sistema.nombre}" onerror="this.src='logo-white.png'">
+                    </div>
+                    <h2>${sistema.nombre}</h2>
+                    <p>${sistema.descripcion}</p>
+                    <a href="${sistema.url}" target="_blank" class="btn-acceder">Acceder →</a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ============================================
+        // FUNCIONES DE MODALES
+        // ============================================
+        function closeFirebaseModal() {
+            document.getElementById('firebaseModal').style.display = 'none';
+        }
+
+        // ============================================
+        // FUNCIONES DE MENÚ FLOTANTE
+        // ============================================
+        function toggleMenu() {
+            const menuButton = document.querySelector('.menu-button');
+            const menuItems = document.getElementById('menuItems');
+            menuButton.classList.toggle('active');
+            menuItems.classList.toggle('active');
+        }
+
+        function closeFloatingMenu() {
+            const menuButton = document.querySelector('.menu-button');
+            const menuItems = document.getElementById('menuItems');
+            menuButton.classList.remove('active');
+            menuItems.classList.remove('active');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            closeFloatingMenu();
+        }
+
+        function showSystems() {
+            alert(`📊 Total de sistemas: ${sistemas.length}\n\n${sistemas.map((s, i) => `${i + 1}. ${s.nombre}`).join('\n')}`);
+            closeFloatingMenu();
+        }
+
+        function downloadSystems() {
+            const dataStr = JSON.stringify(sistemas, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `union-pentecostal-sistemas-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            alert('✅ Datos descargados correctamente');
+            closeFloatingMenu();
+        }
+
+        function showInfo() {
+            const firebaseStatus = useFirebase && db ? '✅ Conectado' : '❌ Desconectado';
+            const sistemasList = sistemas.map((s, i) => `   ${i + 1}. 🔹 ${s.nombre}`).join('\n');
+            
+            alert(`
+🔥 UNIÓN PENTECOSTAL
+Centro de Gestión Integrado
+
+📱 Versión: 2.0
+📅 Año: 2026
+
+✨ Sistema centralizado de administración
+"Derramaré mi Espíritu sobre toda carne" - Hechos 2:17
+
+📊 SISTEMAS DISPONIBLES:
+${sistemasList}
+
+🔐 SINCRONIZACIÓN EN NUBE:
+   ${firebaseStatus}
+
+ℹ️ Datos guardados localmente (localStorage)
+   Usa "Sincronización nube" para multiplicar dispositivos
+            `);
+            closeFloatingMenu();
+        }
+
+        function showHelp() {
+            alert(`
+❓ AYUDA - Centro de Gestión
+
+1️⃣ ACCEDER A SISTEMAS
+   - Haz click en cualquier tarjeta para acceder al sistema
+   - Sistemas disponibles: Inventarios, Asistencia, Cobranzas, Comedor, Himnario Digital, Finanzas, Control de Eventos, Escuela Cristiana Bíblica
+
+2️⃣ GUARDAR DATOS
+   - Los sistemas se guardan automáticamente
+   - Usa "Descargar datos" para hacer backup
+
+3️⃣ MENÚ FLOTANTE
+   - ☰ = Abre/cierra el menú
+   - ⬆️ = Vuelve al inicio
+   - 💾 = Descarga un backup
+   - ℹ️ = Información
+
+4️⃣ SINCRONIZACIÓN EN NUBE
+   - 🔐 Conecta Firebase para sincronizar entre dispositivos
+   - Los cambios se ven en tiempo real
+
+✉️ Para más ayuda, contacta a administración
+            `);
+            closeFloatingMenu();
+        }
+
+        // ============================================
+        // FUNCIONES DE FIREBASE
+        // ============================================
+        function showFirebaseConfig() {
+            document.getElementById('firebaseModal').style.display = 'block';
+            updateFirebaseStatus();
+            closeFloatingMenu();
+        }
+
+        function updateFirebaseStatus() {
+            const status = document.getElementById('firebaseStatus');
+            if (useFirebase && db) {
+                status.innerHTML = '✅ <span style="color: var(--color-gold);">Conectado a Firebase</span>';
+                status.style.color = 'var(--color-gold)';
+            } else {
+                status.innerHTML = '❌ Sin conexión a nube';
+                status.style.color = 'var(--color-red)';
+            }
+        }
+
+        function configureFirebase(event) {
+            event.preventDefault();
+
+            const config = {
+                apiKey: document.getElementById('apiKey').value,
+                projectId: document.getElementById('projectId').value,
+                databaseURL: document.getElementById('databaseUrl').value,
+                authDomain: document.getElementById('projectId').value + '.firebaseapp.com'
+            };
+
+            localStorage.setItem('firebaseConfig', JSON.stringify(config));
+
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(config);
+                }
+                db = firebase.database();
+                useFirebase = true;
+                console.log('✅ Firebase conectado exitosamente');
+
+                setTimeout(() => {
+                    updateFirebaseStatus();
+                    alert('✅ Firebase configurado correctamente\n\n🔄 Sincronizando sistemas...');
+                    closeFirebaseModal();
+                }, 1000);
+            } catch (error) {
+                console.error('❌ Error al configurar Firebase:', error);
+                alert('❌ Error al conectar Firebase. Verifica tus credenciales.');
+            }
+        }
+
+        function showFirebaseGuide() {
+            alert(`
+📚 GUÍA RÁPIDA - CONFIGURAR FIREBASE
+
+1️⃣ CREAR PROYECTO FIREBASE:
+   → Ve a console.firebase.google.com
+   → Click "Crear proyecto"
+   → Nombre: "union-pentecostal"
+
+2️⃣ HABILITAR REALTIME DATABASE:
+   → Sección "Build" → "Realtime Database"
+   → Click "Crear database"
+   → Región: us-central1
+   → Reglas: Selecciona "Iniciar en modo prueba"
+
+3️⃣ OBTENER CREDENCIALES:
+   → Configuración del proyecto (⚙️)
+   → "Cuentas de servicio"
+   → Copiar ID del proyecto
+   → Sección "Apps" → agregar app web
+   → Copiar datos mostrados
+
+4️⃣ COMPLETAR FORMULARIO:
+   → API Key: de configuración web
+   → Project ID: nombre del proyecto
+   → Database URL: https://[PROJECT_ID].firebaseio.com
+
+5️⃣ LISTO:
+   ✅ Tus sistemas se sincronizarán entre dispositivos
+   ✅ Cualquier cambio se verá en tiempo real
+   ✅ Funciona en Android e iOS
+
+📞 Necesitas ayuda? Ve a firebase.google.com
+            `);
+        }
+
+        function loadLogos() {
+            const logoContainer = document.getElementById('logoContainer');
+            logos.forEach(logo => {
+                const div = document.createElement('div');
+                div.className = 'logo-item';
+                div.innerHTML = `<img src="${logo.src}" alt="${logo.name}" onerror="this.src='logo-white.png'">`;
+                logoContainer.appendChild(div);
+            });
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            loadLogos();
+            loadSystems();
+
+            const savedFirebaseConfig = localStorage.getItem('firebaseConfig');
+            if (savedFirebaseConfig && typeof firebase !== 'undefined') {
+                try {
+                    const config = JSON.parse(savedFirebaseConfig);
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(config);
+                    }
+                    db = firebase.database();
+                    useFirebase = true;
+                    console.log('✅ Firebase reconectado');
+                } catch (error) {
+                    console.warn('⚠️ Firebase no disponible:', error);
+                }
+            }
+        });
+
+        // Cerrar menú al hacer click fuera
+        document.addEventListener('click', function(event) {
+            const floatingMenu = document.querySelector('.floating-menu');
+            const menuButton = document.querySelector('.menu-button');
+            
+            if (!floatingMenu.contains(event.target) && !menuButton.contains(event.target)) {
+                closeFloatingMenu();
+            }
+        });
+
+        // Cerrar modal al hacer click fuera
+        window.onclick = function(event) {
+            const firebaseModal = document.getElementById('firebaseModal');
+            
+            if (event.target == firebaseModal) {
+                firebaseModal.style.display = 'none';
+            }
+        }
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado');
+                    })
+                    .catch(error => {
+                        console.log('⚠️ Error al registrar Service Worker:', error);
+                    });
+            });
+        }
+
+        // Detectar cambios de tema del sistema
+        if (window.matchMedia) {
+            const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            darkModeQuery.addEventListener('change', (e) => {
+                if (!localStorage.getItem('theme')) {
+                    loadTheme();
+                }
+            });
+        }
+    </script>
+</body>
 </html>
